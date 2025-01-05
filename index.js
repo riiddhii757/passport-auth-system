@@ -16,11 +16,20 @@ const app = express();
 const saltRounds = 10;
 
 // Use the dynamic port for Render environment
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 10000;
 
 
 const PgSession = connectPGSimple(session);
 
+const db = new pg.Client({
+  user: process.env.PG_USER,
+  host: process.env.PG_HOST,
+  database: process.env.PG_DATABASE,
+  password: process.env.PG_PASSWORD,
+  port: process.env.PG_PORT,
+  ssl: { rejectUnauthorized: false },
+});
+db.connect();
 
 
 app.use(
@@ -44,15 +53,7 @@ app.use(express.static("public"));
 app.use(passport.initialize());
 app.use(passport.session());
 
-const db = new pg.Client({
-  user: process.env.PG_USER,
-  host: process.env.PG_HOST,
-  database: process.env.PG_DATABASE,
-  password: process.env.PG_PASSWORD,
-  port: process.env.PG_PORT,
-  ssl: { rejectUnauthorized: false },
-});
-db.connect();
+
 
 app.get("/", (req, res) => {
   res.render("home.ejs");
