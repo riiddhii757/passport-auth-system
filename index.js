@@ -7,17 +7,35 @@ import { Strategy } from "passport-local";
 import GoogleStrategy from "passport-google-oauth2";
 import session from "express-session";
 import env from "dotenv";
+import connectPGSimple from "connect-pg-simple"; 
+
+
+envnv.config();
 
 const app = express();
-const port = 3000;
 const saltRounds = 10;
-env.config();
+
+// Use the dynamic port for Render environment
+const port = process.env.PORT || 3000;
+
+
+const PgSession = connectPGSimple(session);
+
+
 
 app.use(
   session({
-    secret: process.env.SESSION_SECRET,
+    store: new PgSession({
+      pool: db, // Use the same PostgreSQL client for the session store
+      tableName: "session", // Name of the table where sessions will be stored
+    }),
+    secret: process.env.SESSION_SECRET, // Use the session secret from environment variables
     resave: false,
     saveUninitialized: true,
+    cookie: {
+      secure: process.env.NODE_ENV === "production", // Set secure cookies in production
+      maxAge: 1000 * 60 * 60 * 24, // Set session cookie expiration time (e.g., 1 day)
+    },
   })
 );
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -32,6 +50,7 @@ const db = new pg.Client({
   database: process.env.PG_DATABASE,
   password: process.env.PG_PASSWORD,
   port: process.env.PG_PORT,
+  ssl: { rejectUnauthorized: false },
 });
 db.connect();
 
