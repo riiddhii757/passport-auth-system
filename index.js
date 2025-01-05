@@ -10,7 +10,7 @@ import env from "dotenv";
 import connectPGSimple from "connect-pg-simple"; 
 
 
-envnv.config();
+env.config();
 
 const app = express();
 const saltRounds = 10;
